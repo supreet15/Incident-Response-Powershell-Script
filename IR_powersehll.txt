@@ -1,0 +1,125 @@
+<#
+.Project2-DFOR664
+.Supreet Kaur
+
+.Powershell script to retrieve data from a Windows-based computer that can be used for incident response purposes.  
+
+.This script shall be run with Powershell ISE Administrator credentials
+.Upon running the following the script, one can use the extrated data from the file path C:\ for further investigation. 
+
+#>
+
+
+
+Read-Host "Name of the project:" 
+
+Write-Host "Project 2" 
+
+New-Item -Path "c:\" -Name "Extract" -ItemType "Directory"
+
+New-Item -Path "c:\" -Name "HashExtract" -ItemType "Directory"
+
+$DNS = Get-DnsClientCache 
+
+Write-Output $DNS | 
+Out-File -FilePath C:\Extract\DNS.txt
+
+Get-Date |
+Out-File -FilePath C:\Extract\date.txt
+ 
+Get-TimeZone |
+Out-File -FilePath C:\Extract\Timezone.txt
+
+Get-ComputerInfo `
+-Property "win*", "os*" |
+Out-File -FilePath C:\Extract\PCinfo.txt
+
+Get-WmiObject -ComputerName $env:COMPUTERNAME `
+ -Class Win32_ComputerSystem |
+ Select-Object UserName |
+ Out-File -FilePath C:\Extract\ComputeName.txt
+
+$S = Get-Process
+$S | Get-Process | Format-Table `
+-View priority |
+Out-File -FilePath C:\Extract\Process.txt
+
+Get-Service | 
+ Where-Object {$_.Status -eq "Running"} |
+Out-File -FilePath C:\Extract\services.txt
+
+Get-CimInstance win32_service | 
+Sort-Object State, name, Startmode, Startname | 
+Format-Table Name, State, StartMode, Startname |
+Out-File -FilePath C:\Extract\ciminstance.txt
+
+Get-NetIPAddress | 
+Sort-Object AddressState | 
+Format-Table |
+Out-File -FilePath C:\Extract\NetIPaddress.txt 
+
+Get-NetTCPConnection `
+-State Established |
+Out-File -FilePath C:\Extract\NetTCPConnection.txt
+
+Get-NetNeighbor | 
+Sort-Object State | Format-Table |
+Out-File -FilePath C:\Extract\NetNeighbor.txt
+
+Get-EventLog -LogName Security `
+-Newest 25 |
+Out-File -FilePath C:\Extract\Security.txt
+
+Get-EventLog `
+-LogName System `
+-EntryType Error `
+ -Newest 25 |
+Out-File -FilePath C:\Extract\System.txt
+
+Get-EventLog -LogName Application `
+-EntryType Error `
+-Newest 10 |
+Out-File -FilePath C:\Extract\Application.txt
+ 
+Get-ScheduledTask | 
+Sort-Object state |
+Format-Table |
+Out-File -FilePath C:\Extract\ScheduledTask.txt
+
+Get-HotFix |
+Out-File -FilePath C:\Extract\Hotfix.txt 
+
+$PSVersionTable |
+Out-File -FilePath C:\Extract\PSversion.txt
+
+Get-ChildItem `
+-Path C:\Windows\Prefetch |
+Out-File -FilePath C:\Extract\prefetch.txt |
+Get-FileHash -Algorithm MD5 | Out-File -FilePath C:\HashExtract\prefetchhash.txt
+
+Get-LocalUser | Out-File -FilePath C:\Extract\LocalUser.txt
+
+Get-CimInstance -ClassName win32_process |
+Where-Object {$_.Name -eq 'notepad.exe'} |
+Format-Table -Property ProcessID, ProcessName, CommandLine -AutoSize |
+Out-File -FilePath C:\Extract\lclusr.txt
+
+Get-Item C:\* |
+Out-File -FilePath C:\Extract\lastwrite.txt
+
+Get-ItemProperty "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" |
+Out-File -FilePath C:\Extract\HKLMWoW6432.txt
+
+Get-ItemProperty "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*" |
+Out-File -FilePath C:\Extract\HKLMSoftware.txt
+
+Get-ItemProperty "HKLM:\Software\Microsoft\Windows NT\CurrentVersion" |
+Out-file -FilePath C:\Extract\HKLMWINNT.txt
+
+Get-ChildItem -Path C:\Extract | 
+Get-FileHash -Algorithm MD5 | 
+Out-File -FilePath C:\HashExtract\filehash.txt
+
+<#
+.The script ends here.
+#>
